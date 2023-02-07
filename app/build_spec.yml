@@ -1,0 +1,29 @@
+version: 0.1
+component: build
+timeoutInSeconds: 1000
+shell: bash
+
+steps:
+  - type: Command
+    name: "Setup JDK"
+    timeoutInSeconds: 40
+    command: |
+      PKG_NAME=java-11-openjdk
+      yum -y install $PKG_NAME
+      JAVA_TO_SELECT=$(alternatives --display java | grep "family $PKG_NAME" | cut -d' ' -f1)
+      alternatives --set java $JAVA_TO_SELECT
+  - type: Command
+    name: "Build an application"
+    command: |
+      ./mvnw verify
+  - type: Command
+    name: "Build a docker image"
+    command: |
+      ./mvnw package -Dpackaging=docker
+outputArtifacts:
+  - name: jar
+    type: BINARY
+    location: target/ecommsuite-microeaut-0.1.jar
+  - name: build-service-demo
+    type: DOCKER_IMAGE
+    location: ecommsuite-microeaut
